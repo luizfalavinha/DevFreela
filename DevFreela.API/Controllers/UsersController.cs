@@ -1,5 +1,6 @@
 ﻿using DevFreela.API.Models;
-using Microsoft.AspNetCore.Http;
+using DevFreela.Application.InputModels;
+using DevFreela.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevFreela.API.Controllers
@@ -8,18 +9,54 @@ namespace DevFreela.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private readonly IUserService _userService;
+
+        public UsersController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            return Ok(_userService.GetAll());
+        }
+
         // api/users/1
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            return Ok();
+            var user = _userService.GetById(id);
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
         }
 
         // api/users
         [HttpPost]
-        public IActionResult Post([FromBody] CreateUserModel createUserModel)
+        public IActionResult Post([FromBody] NewUserInputModel inputModel)
         {
-            return CreatedAtAction(nameof(GetById), new { id = 1 }, createUserModel);
+            var userId = _userService.Create(inputModel);
+
+            return CreatedAtAction(nameof(GetById), new { id = userId }, inputModel);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody] UpdateUserInputModel inputModel)
+        {
+            _userService.Update(inputModel);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            _userService.Delete(id);
+
+            return NoContent();
         }
 
         // api/users/login
