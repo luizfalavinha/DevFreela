@@ -59,10 +59,7 @@ namespace DevFreela.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateProjectCommand command)
         {
-            if (command.Title.Length > 50)
-            {
-                return BadRequest();
-            }
+            
 
             //var projectId = _projectService.Create(inputModel); // applications service
 
