@@ -1,19 +1,25 @@
 ﻿using DevFreela.API.Models;
+using DevFreela.Application.Commands.LoginUser;
 using DevFreela.Application.InputModels;
 using DevFreela.Application.Services.Interfaces;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevFreela.API.Controllers
 {
     [Route("api/users")]
     [ApiController]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IMediator _mediator;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IMediator mediator)
         {
             _userService = userService;
+            _mediator = mediator;
         }
 
         [HttpGet]
@@ -38,16 +44,6 @@ namespace DevFreela.API.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] NewUserInputModel inputModel)
         {
-            if (ModelState.IsValid is false)
-            {
-                var messages = ModelState
-                    .SelectMany(ms => ms.Value.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-
-                return BadRequest(messages);    
-            }
-
             var userId = _userService.Create(inputModel);
 
             return CreatedAtAction(nameof(GetById), new { id = userId }, inputModel);
@@ -71,9 +67,17 @@ namespace DevFreela.API.Controllers
 
         // api/users/login
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginModel login)
+        [AllowAnonymous]
+        public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
         {
-            return Ok();
+            var loginUserViewModel = await _mediator.Send(command);
+
+            if (loginUserViewModel is null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(loginUserViewModel);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using DevFreela.Application.InputModels;
 using DevFreela.Application.Services.Interfaces;
 using DevFreela.Application.ViewModels;
+using DevFreela.Core.AuthServices;
 using DevFreela.Core.Entities;
 using DevFreela.Infrastructure.Persistence;
 
@@ -9,15 +10,24 @@ namespace DevFreela.Application.Services.Implementations
     public class UserService : IUserService
     {
         private readonly DevFreelaDbContext _dbContext;
+        private readonly IAuthService _authService;
 
-        public UserService(DevFreelaDbContext dbContext)
+        public UserService(DevFreelaDbContext dbContext, IAuthService authService)
         {
             _dbContext = dbContext;
+            _authService = authService;
         }
 
         public int Create(NewUserInputModel inputModel)
         {
-            var user = new User(inputModel.Fullname, inputModel.Email, inputModel.Birthday);
+            var passwordHash = _authService.ComputeSha256Hash(inputModel.Password);
+
+            var user = new User(
+                inputModel.Fullname,
+                inputModel.Email,
+                passwordHash,
+                inputModel.Role,
+                inputModel.Birthday);
 
             _dbContext.Users.Add(user);
 

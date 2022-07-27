@@ -8,12 +8,14 @@ using DevFreela.Application.Queries.GetAllProjects;
 using DevFreela.Application.Queries.GetProjectById;
 using DevFreela.Application.Services.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevFreela.API.Controllers
 {
     [Route("api/projects")]
     [ApiController]
+    [Authorize]
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
@@ -26,6 +28,7 @@ namespace DevFreela.API.Controllers
         }
 
         [HttpGet]
+        [Authorize("client, freelancer")]
         public async Task<IActionResult> GetAll(string query)
         {
             // Services
@@ -40,6 +43,7 @@ namespace DevFreela.API.Controllers
 
         // api/projects/3
         [HttpGet("{id}")]
+        [Authorize("client, freelancer")]
         public async Task<IActionResult> GetById(int id)
         {
             //var project = _projectService.GetById(id); // Services
@@ -57,6 +61,7 @@ namespace DevFreela.API.Controllers
         }
 
         [HttpPost]
+        [Authorize("client")]
         public async Task<IActionResult> Post([FromBody] CreateProjectCommand command)
         {
             if (command.Title.Length > 50)
@@ -74,6 +79,7 @@ namespace DevFreela.API.Controllers
 
         // api/projects/2
         [HttpPut("{id}")]
+        [Authorize("client")]
         public async Task<IActionResult> Put(int id, [FromBody] UpdateProjectCommand command)
         {
             if (command.Description.Length > 200)
@@ -92,6 +98,7 @@ namespace DevFreela.API.Controllers
 
         // api/projects/3
         [HttpDelete("{id}")]
+        [Authorize("client")]
         public async Task<IActionResult> Delete(int id)
         {
             //_projectService.Delete(id);
@@ -105,6 +112,7 @@ namespace DevFreela.API.Controllers
 
         // api/projects/1/comments
         [HttpPost("{id}/comments")]
+        [Authorize("client, freelancer")]
         public async Task<IActionResult> PostComment(int id, [FromBody] CreateCommentCommand command)
         {
             //_projectService.CreateComment(inputModel);
@@ -116,6 +124,7 @@ namespace DevFreela.API.Controllers
 
         // api/projects/4/start
         [HttpPut("{id}/start")]
+        [Authorize("client")]
         public IActionResult Start(int id)
         {
             _projectService.Start(id);
@@ -125,6 +134,7 @@ namespace DevFreela.API.Controllers
 
         // api/projects/4/finish
         [HttpPut("{id}/finish")]
+        [Authorize("client")]
         public IActionResult Finish(int id)
         {
             _projectService.Finish(id);
